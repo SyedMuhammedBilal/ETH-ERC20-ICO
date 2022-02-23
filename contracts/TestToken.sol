@@ -10,9 +10,16 @@ contract TestToken is ITestToken {
     uint256 public totalSupply;
     uint256 public decimals;
 
-    mapping (address => uint256) public balanceOf;    
+    mapping (address => uint256) public balanceOf;  
+    mapping (address => mapping (address => uint256)) public allowance;  
 
-    constructor(string memory _name, string memory _symbol, string memory _standard, uint256 _totalSupply, uint256 _decimals) {
+    constructor(
+        string memory _name, 
+        string memory _symbol, 
+        string memory _standard,
+        uint256 _totalSupply, 
+        uint256 _decimals
+    ) {
         name = _name;
         symbol = _symbol;
         standard = _standard;
@@ -30,4 +37,23 @@ contract TestToken is ITestToken {
         emit Transfer(msg.sender, _to, _value);
         return true;
     }
+
+    function approve(address _spender, uint256 _value) public override returns (bool) {
+        allowance[msg.sender][_spender] = _value;
+        emit Approval(msg.sender, _spender, _value);
+        return true;
+    }
+
+    function transferFrom(address _from, address _to, uint256 _value) external returns (bool) {
+        require(_value <= balanceOf[_from]);
+        require(_value <= allowance[_from][msg.sender]);   
+
+        balanceOf[_from] -= _value;
+        balanceOf[_to] += _value;
+        allowance[_from][msg.sender] -= _value;
+
+        emit Transfer(_from, _to, _value);
+        return true;
+    }
+
 }
