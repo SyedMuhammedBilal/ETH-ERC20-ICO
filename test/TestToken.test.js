@@ -19,7 +19,7 @@ contract('TestToken', function(accounts) {
         }).then(function(decimals) {
             assert.equal(decimals, 18, 'should have correct decimals');
         })
-    })
+    });
     
     it('sets the values upon deployment', function() {
         return TestToken.deployed().then(function(instance) {
@@ -31,5 +31,24 @@ contract('TestToken', function(accounts) {
         }).then(function(adminBalance) {
             assert.equal(adminBalance.toNumber(), 1000000000, 'sets inital supply to admin account')
         })
-    })
-})
+    });
+
+    it('transfers token ownership', function() {
+        return TestToken.deployed().then(function(instance) {
+            tokenInstance = instance;
+            return tokenInstance.transfer.call(accounts[1], 9999999999999)
+        }).then(assert.fail).catch(function(error) {
+            assert(error.message.indexOf('revert') >= 0, 'error message must contain revert');
+            return tokenInstance.transfer(accounts[1], 25000, { from: accounts[0] });
+        }).then(function(transactionHash) {
+            assert.equal(transactionHash.logs.length, 1, 'triggers one event');
+            assert.equal(transactionHash.logs[0].event, 'Transfer', 'should be the "Transfer" event');
+            assert.equal(transactionHash.logs[0].args._from, accounts[0], 'logs the account the tokens are transferred from');
+            assert.equal(transactionHash.logs[0].args._to, accounts[1], 'logs the account the tokens are transferred to');
+            assert.equal(transactionHash.logs[0].args._value, 25000, 'logs the transfer amount');
+            return tokenInstance.balanceOf(accounts[1]);
+        }).then(function(balance) {
+            assert.equal(balance.toNumber(), 25000, 'adds number of token to receiver address');
+        })
+    });
+});

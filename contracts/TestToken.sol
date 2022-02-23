@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract TestToken {
+import "./interface/ITestToken.sol";
+
+contract TestToken is ITestToken {
     string public name;
     string public symbol;
     string public standard;
@@ -19,4 +21,13 @@ contract TestToken {
         balanceOf[msg.sender] = _totalSupply;
     }
 
+    function transfer(address _to, uint256 _value) public override returns (bool) {
+        require(balanceOf[msg.sender] >= _value, "Not enough balance");
+
+        balanceOf[msg.sender] -= _value;
+        balanceOf[_to] += _value;
+
+        emit Transfer(msg.sender, _to, _value);
+        return true;
+    }
 }
