@@ -57,7 +57,7 @@ contract TestToken is ITestToken {
         * @param _to address The address which you want to transfer to
         * @param _value uint256 The amount of tokens to be transferred
     */
-    function transferFrom(address _from, address _to, uint256 _value) external returns (bool) {
+    function transferFrom(address _from, address _to, uint256 _value) public override returns (bool) {
         require(_value <= balanceOf[_from]);
         require(_value <= allowance[_from][msg.sender]);   
 
